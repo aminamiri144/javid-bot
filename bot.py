@@ -17,8 +17,8 @@ SELECTING_GENDER, GETTING_NAME = range(2)
 
 # موقعیت و تنظیمات متن روی تصویر
 TEXT_POSITION = {
-    'male': (950, 1260),  # موقعیت X, Y برای آقایان
-    'female': (950, 1260)  # موقعیت X, Y برای خانم‌ها
+    'male': (970, 1200),  # موقعیت X, Y برای آقایان
+    'female': (970, 1200)  # موقعیت X, Y برای خانم‌ها
 }
 
 TEXT_COLOR = (255, 215, 0)  # رنگ طلایی
@@ -85,6 +85,16 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             caption=f"دعوت‌نامه شما آماده است، {name} عزیز!"
         )
         
+        # نمایش دکمه برای ساخت دعوت‌نامه جدید
+        keyboard = [
+            [InlineKeyboardButton("ساخت دعوت‌نامه جدید", callback_data='new_invitation')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(
+            "آیا می‌خواهید دعوت‌نامه دیگری بسازید؟",
+            reply_markup=reply_markup
+        )
+        
     except Exception as e:
         await update.message.reply_text(f"خطا در پردازش تصویر: {str(e)}")
     
@@ -92,6 +102,25 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data.clear()
     
     return ConversationHandler.END
+
+async def new_invitation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """شروع ساخت دعوت‌نامه جدید"""
+    query = update.callback_query
+    await query.answer()
+    
+    # نمایش دکمه‌های انتخاب جنسیت
+    keyboard = [
+        [InlineKeyboardButton("آقا", callback_data='male')],
+        [InlineKeyboardButton("خانم", callback_data='female')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        "جنسیت را انتخاب کنید:",
+        reply_markup=reply_markup
+    )
+    
+    return SELECTING_GENDER
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """لغو عملیات"""
@@ -157,7 +186,7 @@ def main():
     
     # ایجاد ConversationHandler
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[CommandHandler('start', start), CallbackQueryHandler(new_invitation, pattern='^new_invitation$')],
         states={
             SELECTING_GENDER: [CallbackQueryHandler(gender_selected)],
             GETTING_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
