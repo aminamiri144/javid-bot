@@ -11,42 +11,44 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-y
 
 # تعریف جفت تصاویر دعوت‌نامه
 # فرمت: {'key': {'name': 'نام نمایشی', 'male': 'مسیر فایل مرد', 'female': 'مسیر فایل زن', 'position': (x, y)}}
+position = (990, 1200)
+
 IMAGE_SETS = {
     'invitation': {
         'name': 'جاوید سازه',
         'male': 'posters/javid_m.JPG',
         'female': 'posters/javid_f.JPG',
-        'position': (970, 1200)
+        'position': position
     },
     'namara': {
         'name': 'آجر نما نمارا',
         'male': 'posters/namara_m.jpg',
         'female': 'posters/namara_f.jpg',
-        'position': (970, 1200)
+        'position': position
     },
     'set2': {
         'name': 'دایاوین',
         'male': 'posters/dayavin_m.jpg',
         'female': 'posters/dayavin_f.jpg',
-        'position': (970, 1200)
+        'position': position
     },
     'set3': {
         'name': 'اسانسور ایوان',
         'male': 'posters/evan_m.jpg',
         'female': 'posters/evan_f.jpg',
-        'position': (970, 1200)
+        'position': position
     },
     'set4': {
         'name': 'بازرگانی هاشمی',
         'male': 'posters/hashemi_m.jpg',
         'female': 'posters/hashemi_f.jpg',
-        'position': (970, 1200)
+        'position': position
     },
     'set5': {
         'name': 'گالری کاشی صباغیان',
         'male': 'posters/sabaghian_m.jpg',
         'female': 'posters/sabaghian_f.jpg',
-        'position': (970, 1200)
+        'position': position
     },
 }
 
