@@ -8,31 +8,86 @@ from bidi.algorithm import get_display
 
 # توکن ربات تلگرام - باید از @BotFather دریافت کنید
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-yEk")
-# مسیر تصاویر دعوت‌نامه
-MALE_INVITATION_IMAGE = "invitation_male.JPG"
-FEMALE_INVITATION_IMAGE = "invitation_female.JPG"
 
-# حالت‌های مکالمه
-SELECTING_GENDER, GETTING_NAME = range(2)
-
-# موقعیت و تنظیمات متن روی تصویر
-TEXT_POSITION = {
-    'male': (950, 1200),  # موقعیت X, Y برای آقایان
-    'female': (950, 1200)  # موقعیت X, Y برای خانم‌ها
+# تعریف جفت تصاویر دعوت‌نامه
+# فرمت: {'key': {'name': 'نام نمایشی', 'male': 'مسیر فایل مرد', 'female': 'مسیر فایل زن', 'position': (x, y)}}
+IMAGE_SETS = {
+    'invitation': {
+        'name': 'جاوید سازه',
+        'male': 'posters/javid_m.JPG',
+        'female': 'posters/javid_f.JPG',
+        'position': (970, 1200)
+    },
+    'namara': {
+        'name': 'آجر نما نمارا',
+        'male': 'posters/namara_m.jpg',
+        'female': 'posters/namara_f.jpg',
+        'position': (970, 1200)
+    },
+    'set2': {
+        'name': 'دایاوین',
+        'male': 'posters/dayavin_m.jpg',
+        'female': 'posters/dayavin_f.jpg',
+        'position': (970, 1200)
+    },
+    'set3': {
+        'name': 'اسانسور ایوان',
+        'male': 'posters/evan_m.jpg',
+        'female': 'posters/evan_f.jpg',
+        'position': (970, 1200)
+    },
+    'set4': {
+        'name': 'بازرگانی هاشمی',
+        'male': 'posters/hashemi_m.jpg',
+        'female': 'posters/hashemi_f.jpg',
+        'position': (970, 1200)
+    },
+    'set5': {
+        'name': 'گالری کاشی صباغیان',
+        'male': 'posters/sabaghian_m.jpg',
+        'female': 'posters/sabaghian_f.jpg',
+        'position': (970, 1200)
+    },
 }
 
-TEXT_COLOR = (255, 215, 0)  # رنگ طلایی
-FONT_SIZE = 52
+# حالت‌های مکالمه
+SELECTING_IMAGE_SET, SELECTING_GENDER, GETTING_NAME = range(3)
+
+TEXT_COLOR = (255, 255, 255)  # رنگ طلایی
+FONT_SIZE = 42
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """شروع ربات و نمایش دکمه‌های انتخاب جنسیت"""
+    """شروع ربات و نمایش دکمه‌های انتخاب جفت تصویر"""
+    # ساخت دکمه‌ها برای انتخاب جفت تصویر
+    keyboard = []
+    for key, image_set in IMAGE_SETS.items():
+        keyboard.append([InlineKeyboardButton(image_set['name'], callback_data=f'imgset_{key}')])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(
+        "لطفاً اسپانسر دعوت‌نامه را انتخاب کنید:",
+        reply_markup=reply_markup
+    )
+    
+    return SELECTING_IMAGE_SET
+
+async def image_set_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """ذخیره جفت تصویر انتخاب شده و نمایش دکمه‌های انتخاب جنسیت"""
+    query = update.callback_query
+    await query.answer()
+    
+    # استخراج key از callback_data (imgset_namara -> namara)
+    image_set_key = query.data.replace('imgset_', '')
+    context.user_data['image_set'] = image_set_key
+    
     keyboard = [
         [InlineKeyboardButton("آقا", callback_data='male')],
         [InlineKeyboardButton("خانم", callback_data='female')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await update.message.reply_text(
+    await query.edit_message_text(
         "جنسیت را انتخاب کنید:",
         reply_markup=reply_markup
     )
@@ -61,14 +116,21 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     
     context.user_data['name'] = name
     gender = context.user_data.get('gender')
+    image_set_key = context.user_data.get('image_set')
+    
+    # بررسی وجود image_set در context
+    if not image_set_key or image_set_key not in IMAGE_SETS:
+        await update.message.reply_text("خطا: جفت تصویر انتخاب نشده است!")
+        return ConversationHandler.END
     
     # انتخاب تصویر مناسب
+    image_set = IMAGE_SETS[image_set_key]
     if gender == 'male':
-        image_path = MALE_INVITATION_IMAGE
-        position = TEXT_POSITION['male']
+        image_path = image_set['male']
     else:
-        image_path = FEMALE_INVITATION_IMAGE
-        position = TEXT_POSITION['female']
+        image_path = image_set['female']
+    
+    position = image_set['position']
     
     # بررسی وجود تصویر
     if not os.path.exists(image_path):
@@ -108,19 +170,19 @@ async def new_invitation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     query = update.callback_query
     await query.answer()
     
-    # نمایش دکمه‌های انتخاب جنسیت
-    keyboard = [
-        [InlineKeyboardButton("آقا", callback_data='male')],
-        [InlineKeyboardButton("خانم", callback_data='female')]
-    ]
+    # ساخت دکمه‌ها برای انتخاب جفت تصویر
+    keyboard = []
+    for key, image_set in IMAGE_SETS.items():
+        keyboard.append([InlineKeyboardButton(image_set['name'], callback_data=f'imgset_{key}')])
+    
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await query.edit_message_text(
-        "جنسیت را انتخاب کنید:",
+        "لطفاً طرح دعوت‌نامه را انتخاب کنید:",
         reply_markup=reply_markup
     )
     
-    return SELECTING_GENDER
+    return SELECTING_IMAGE_SET
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """لغو عملیات"""
@@ -138,10 +200,7 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
     try:
         # استفاده از فونت پیش‌فرض سیستم یا فونت فارسی
         font_paths = [
-            "fonts/Peyda-Black.ttf",  # فونت پایدا
-            "fonts/Vazir.ttf",  # فونت وزیر
-            "fonts/Shabnam.ttf",  # فونت شبنم
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # فونت لینوکس
+            "fonts/YekanBakh-Black.ttf",  # فونت پایدا
         ]
         
         font = None
@@ -174,7 +233,7 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
     
     # تبدیل به BytesIO برای ارسال
     output = io.BytesIO()
-    img.save(output, format='JPEG', quality=95)
+    img.save(output, format='JPEG')
     output.seek(0)
     
     return output
