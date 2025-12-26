@@ -7,8 +7,8 @@ import io
 # توکن ربات تلگرام - باید از @BotFather دریافت کنید
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-yEk")
 # مسیر تصاویر دعوت‌نامه
-MALE_INVITATION_IMAGE = "invitation_male.jpg"
-FEMALE_INVITATION_IMAGE = "invitation_female.jpg"
+MALE_INVITATION_IMAGE = "invitation_male.JPG"
+FEMALE_INVITATION_IMAGE = "invitation_female.JPG"
 
 # حالت‌های مکالمه
 SELECTING_GENDER, GETTING_NAME = range(2)
@@ -107,7 +107,10 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
     try:
         # استفاده از فونت پیش‌فرض سیستم یا فونت فارسی
         font_paths = [
-            "fonts/Peyda-Black.ttf",  # فونت وزیر
+            "fonts/Peyda-Black.ttf",  # فونت پایدا
+            "fonts/Vazir.ttf",  # فونت وزیر
+            "fonts/Shabnam.ttf",  # فونت شبنم
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # فونت لینوکس
         ]
         
         font = None
