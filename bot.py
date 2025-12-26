@@ -14,7 +14,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-y
 
 IMAGE = 'main_poster.JPG'
 name_position = (970, 1200)
-signature_position = (970, 1400)
+signature_position = (970, 2000)
 
 IMAGE_SETS = {
     'invitation': {
@@ -55,15 +55,13 @@ IMAGE_SETS = {
     },
 }
 
-# متن امضا (نام تصویر)
-SIGNATURE_TEXT = "name image srt"
 
 # حالت‌های مکالمه
 SELECTING_IMAGE_SET, SELECTING_GENDER, GETTING_NAME = range(3)
 
 TEXT_COLOR = (255, 255, 255)  # رنگ سفید
-FONT_SIZE = 16
-SIGNATURE_FONT_SIZE = 16
+FONT_SIZE = 42
+SIGNATURE_FONT_SIZE = 42
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """شروع ربات و نمایش دکمه‌های انتخاب جفت تصویر"""
@@ -146,12 +144,13 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         full_name_text = f"جناب آقای {name}"
     else:
         full_name_text = f"سرکار خانم {name}"
-    
+
     # نوشتن متن روی تصویر
     try:
         output_image = add_text_to_image(
             image_path, 
             full_name_text, 
+            image_set['name'],
             image_set['name_position'],
             image_set['signature_position']
         )
@@ -235,14 +234,11 @@ def process_persian_text(text: str) -> str:
     except:
         return text
 
-def add_text_to_image(image_path: str, name_text: str, name_position: tuple, signature_position: tuple) -> io.BytesIO:
+def add_text_to_image(image_path: str, name_text: str, sponsor_name: str, name_position: tuple, signature_position: tuple) -> io.BytesIO:
     """نوشتن دو متن روی تصویر: نام و امضا"""
     # باز کردن تصویر
     img = Image.open(image_path)
     draw = ImageDraw.Draw(img)
-    
-    # گرفتن ابعاد تصویر
-    img_width, img_height = img.size
     
     # دریافت فونت‌ها
     name_font = get_font(FONT_SIZE)
@@ -251,24 +247,25 @@ def add_text_to_image(image_path: str, name_text: str, name_position: tuple, sig
     # تبدیل متن فارسی برای نام
     name_bidi = process_persian_text(name_text)
     
-    # محاسبه موقعیت مرکز افقی برای نام
-    center_x = img_width // 2
+    # محاسبه موقعیت برای نام
+    name_x = name_position[0]
     name_y = name_position[1]
     
-    # نوشتن متن نام روی تصویر با anchor "mm" برای مرکز کردن
-    draw.text((center_x, name_y), name_bidi, fill=TEXT_COLOR, font=name_font, anchor="mm")
+    # نوشتن متن نام روی تصویر با anchor "rt" برای راست‌چین کردن
+    draw.text((name_x, name_y), name_bidi, fill=TEXT_COLOR, font=name_font, anchor="rt")
     
-    # ساخت متن امضا: "با احترام / name image srt"
-    signature_text = f"با احترام / {SIGNATURE_TEXT}"
+    # ساخت متن امضا: "با احترام / نام اسپانسر"
+    signature_text = f"با احترام / {sponsor_name}"
     
     # تبدیل متن فارسی برای امضا
     signature_bidi = process_persian_text(signature_text)
     
-    # محاسبه موقعیت مرکز افقی برای امضا
+    # محاسبه موقعیت برای امضا
+    signature_x = signature_position[0]
     signature_y = signature_position[1]
     
-    # نوشتن متن امضا روی تصویر با anchor "mm" برای مرکز کردن
-    draw.text((center_x, signature_y), signature_bidi, fill=TEXT_COLOR, font=signature_font, anchor="mm")
+    # نوشتن متن امضا روی تصویر با anchor "rt" برای راست‌چین کردن
+    draw.text((signature_x, signature_y), signature_bidi, fill=TEXT_COLOR, font=signature_font, anchor="rt")
     
     # تبدیل به BytesIO برای ارسال
     output = io.BytesIO()
