@@ -17,12 +17,12 @@ SELECTING_GENDER, GETTING_NAME = range(2)
 
 # موقعیت و تنظیمات متن روی تصویر
 TEXT_POSITION = {
-    'male': (970, 1200),  # موقعیت X, Y برای آقایان
-    'female': (970, 1200)  # موقعیت X, Y برای خانم‌ها
+    'male': (900, 1200),  # موقعیت X, Y برای آقایان
+    'female': (900, 1200)  # موقعیت X, Y برای خانم‌ها
 }
 
 TEXT_COLOR = (255, 215, 0)  # رنگ طلایی
-FONT_SIZE = 48
+FONT_SIZE = 52
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """شروع ربات و نمایش دکمه‌های انتخاب جنسیت"""
@@ -82,7 +82,7 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         # ارسال تصویر
         await update.message.reply_photo(
             photo=output_image,
-            caption=f"دعوت‌نامه شما آماده است، {name} عزیز!"
+            # caption=f"دعوت‌نامه شما آماده است، {name} عزیز!"
         )
         
         # نمایش دکمه برای ساخت دعوت‌نامه جدید
