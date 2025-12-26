@@ -82,7 +82,7 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         # ارسال تصویر
         await update.message.reply_photo(
             photo=output_image,
-            # caption=f"دعوت‌نامه شما آماده است، {name} عزیز!"
+            caption=f"دعوت‌نامه {name}"
         )
         
         # نمایش دکمه برای ساخت دعوت‌نامه جدید
