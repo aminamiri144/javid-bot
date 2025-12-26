@@ -9,54 +9,61 @@ from bidi.algorithm import get_display
 # توکن ربات تلگرام - باید از @BotFather دریافت کنید
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-yEk")
 
-# تعریف جفت تصاویر دعوت‌نامه
-# فرمت: {'key': {'name': 'نام نمایشی', 'male': 'مسیر فایل مرد', 'female': 'مسیر فایل زن', 'position': (x, y)}}
-position = (970, 1200)
+# تعریف تصاویر دعوت‌نامه
+# فرمت: {'key': {'name': 'نام نمایشی', 'image': 'مسیر فایل تصویر', 'name_position': (x, y), 'signature_position': (x, y)}}
+
+IMAGE = 'main_poster.jpg'
+name_position = (970, 1200)
+signature_position = (970, 1400)
 
 IMAGE_SETS = {
     'invitation': {
-        'name': 'جاوید سازه',
-        'male': 'posters/javid_m.JPG',
-        'female': 'posters/javid_f.JPG',
-        'position': position
+        'name': 'گروه مهندسی جاوید سازه',
+        'image': IMAGE,
+        'name_position': name_position,
+        'signature_position': signature_position
     },
     'namara': {
-        'name': 'آجر نما نمارا',
-        'male': 'posters/namara_m.jpg',
-        'female': 'posters/namara_f.jpg',
-        'position': position
+        'name': 'آجر نمای نمارا',
+        'image': IMAGE,
+        'name_position': name_position,
+        'signature_position': signature_position
     },
     'set2': {
         'name': 'دایاوین',
-        'male': 'posters/dayavin_m.jpg',
-        'female': 'posters/dayavin_f.jpg',
-        'position': position
+        'image': IMAGE,
+        'name_position': name_position,
+        'signature_position': signature_position
     },
     'set3': {
-        'name': 'اسانسور ایوان',
-        'male': 'posters/evan_m.jpg',
-        'female': 'posters/evan_f.jpg',
-        'position': position
+        'name': 'آسانسور ایوان',
+        'image': IMAGE,
+        'name_position': name_position,
+        'signature_position': signature_position
     },
     'set4': {
         'name': 'بازرگانی هاشمی',
-        'male': 'posters/hashemi_m.jpg',
-        'female': 'posters/hashemi_f.jpg',
-        'position': position
+        'image': IMAGE,
+        'name_position': name_position,
+        'signature_position': signature_position
     },
     'set5': {
         'name': 'گالری کاشی صباغیان',
-        'male': 'posters/sabaghian_m.jpg',
-        'female': 'posters/sabaghian_f.jpg',
-        'position': position
+        'image': IMAGE,
+        'name_position': name_position,
+        'signature_position': signature_position
     },
 }
+
+# متن امضا (نام تصویر)
+SIGNATURE_TEXT = "name image srt"
 
 # حالت‌های مکالمه
 SELECTING_IMAGE_SET, SELECTING_GENDER, GETTING_NAME = range(3)
 
-TEXT_COLOR = (255, 255, 255)  # رنگ طلایی
-FONT_SIZE = 42
+TEXT_COLOR = (255, 255, 255)  # رنگ سفید
+FONT_SIZE = 16
+SIGNATURE_FONT_SIZE = 16
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """شروع ربات و نمایش دکمه‌های انتخاب جفت تصویر"""
@@ -75,7 +82,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return SELECTING_IMAGE_SET
 
 async def image_set_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """ذخیره جفت تصویر انتخاب شده و نمایش دکمه‌های انتخاب جنسیت"""
+    """ذخیره تصویر انتخاب شده و نمایش دکمه‌های انتخاب جنسیت"""
     query = update.callback_query
     await query.answer()
     
@@ -122,26 +129,32 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     
     # بررسی وجود image_set در context
     if not image_set_key or image_set_key not in IMAGE_SETS:
-        await update.message.reply_text("خطا: جفت تصویر انتخاب نشده است!")
+        await update.message.reply_text("خطا: تصویر انتخاب نشده است!")
         return ConversationHandler.END
     
-    # انتخاب تصویر مناسب
+    # انتخاب تصویر
     image_set = IMAGE_SETS[image_set_key]
-    if gender == 'male':
-        image_path = image_set['male']
-    else:
-        image_path = image_set['female']
-    
-    position = image_set['position']
+    image_path = image_set['image']
     
     # بررسی وجود تصویر
     if not os.path.exists(image_path):
         await update.message.reply_text(f"خطا: تصویر {image_path} یافت نشد!")
         return ConversationHandler.END
     
-    # نوشتن نام روی تصویر
+    # ساخت متن نام با پیشوند مناسب
+    if gender == 'male':
+        full_name_text = f"جناب آقای {name}"
+    else:
+        full_name_text = f"سرکار خانم {name}"
+    
+    # نوشتن متن روی تصویر
     try:
-        output_image = add_text_to_image(image_path, name, position)
+        output_image = add_text_to_image(
+            image_path, 
+            full_name_text, 
+            image_set['name_position'],
+            image_set['signature_position']
+        )
         
         # ارسال تصویر
         await update.message.reply_photo(
@@ -192,8 +205,38 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data.clear()
     return ConversationHandler.END
 
-def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO:
-    """نوشتن متن روی تصویر و برگرداندن تصویر به صورت BytesIO"""
+def get_font(font_size: int):
+    """دریافت فونت با اندازه مشخص"""
+    font_paths = [
+        "fonts/YekanBakhFaNum-SemiBold.ttf",
+        "fonts/YekanBakhFaNum-SemiBold",
+    ]
+    
+    font = None
+    for font_path in font_paths:
+        if os.path.exists(font_path):
+            try:
+                font = ImageFont.truetype(font_path, font_size)
+                break
+            except:
+                continue
+    
+    if font is None:
+        font = ImageFont.load_default()
+    
+    return font
+
+def process_persian_text(text: str) -> str:
+    """تبدیل متن فارسی برای نمایش صحیح"""
+    try:
+        reshaped_text = arabic_reshaper.reshape(text)
+        bidi_text = get_display(reshaped_text)
+        return bidi_text
+    except:
+        return text
+
+def add_text_to_image(image_path: str, name_text: str, name_position: tuple, signature_position: tuple) -> io.BytesIO:
+    """نوشتن دو متن روی تصویر: نام و امضا"""
     # باز کردن تصویر
     img = Image.open(image_path)
     draw = ImageDraw.Draw(img)
@@ -201,46 +244,31 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
     # گرفتن ابعاد تصویر
     img_width, img_height = img.size
     
-    # تلاش برای استفاده از فونت فارسی
-    try:
-        # استفاده از فونت پیش‌فرض سیستم یا فونت فارسی
-        font_paths = [
-            "fonts/YekanBakh-Regular.ttf",  # فونت یکانبخ
-            "fonts/YekanBakh-Regular",  # بدون پسوند
-        ]
-        
-        font = None
-        for font_path in font_paths:
-            if os.path.exists(font_path):
-                try:
-                    font = ImageFont.truetype(font_path, FONT_SIZE)
-                    break
-                except:
-                    continue
-        
-        if font is None:
-            # استفاده از فونت پیش‌فرض
-            font = ImageFont.load_default()
-    except:
-        font = ImageFont.load_default()
+    # دریافت فونت‌ها
+    name_font = get_font(FONT_SIZE)
+    signature_font = get_font(SIGNATURE_FONT_SIZE)
     
-    # تبدیل متن فارسی برای نمایش صحیح
-    try:
-        # reshape کردن متن فارسی برای اتصال حروف
-        reshaped_text = arabic_reshaper.reshape(text)
-        # اصلاح جهت متن (RTL)
-        bidi_text = get_display(reshaped_text)
-    except:
-        # در صورت خطا، از متن اصلی استفاده می‌شود
-        bidi_text = text
+    # تبدیل متن فارسی برای نام
+    name_bidi = process_persian_text(name_text)
     
-    # محاسبه موقعیت مرکز افقی (X در وسط تصویر)
+    # محاسبه موقعیت مرکز افقی برای نام
     center_x = img_width // 2
-    # موقعیت عمودی از position tuple گرفته می‌شود
-    y_position = position[1]
+    name_y = name_position[1]
     
-    # نوشتن متن روی تصویر با anchor "mm" برای مرکز کردن متن
-    draw.text((center_x, y_position), bidi_text, fill=TEXT_COLOR, font=font, anchor="mm")
+    # نوشتن متن نام روی تصویر با anchor "mm" برای مرکز کردن
+    draw.text((center_x, name_y), name_bidi, fill=TEXT_COLOR, font=name_font, anchor="mm")
+    
+    # ساخت متن امضا: "با احترام / name image srt"
+    signature_text = f"با احترام / {SIGNATURE_TEXT}"
+    
+    # تبدیل متن فارسی برای امضا
+    signature_bidi = process_persian_text(signature_text)
+    
+    # محاسبه موقعیت مرکز افقی برای امضا
+    signature_y = signature_position[1]
+    
+    # نوشتن متن امضا روی تصویر با anchor "mm" برای مرکز کردن
+    draw.text((center_x, signature_y), signature_bidi, fill=TEXT_COLOR, font=signature_font, anchor="mm")
     
     # تبدیل به BytesIO برای ارسال
     output = io.BytesIO()
