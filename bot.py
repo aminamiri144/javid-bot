@@ -12,7 +12,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-y
 # تعریف تصاویر دعوت‌نامه
 # فرمت: {'key': {'name': 'نام نمایشی', 'image': 'مسیر فایل تصویر', 'name_position': (x, y), 'signature_position': (x, y)}}
 
-IMAGE = 'main_poster.jpg'
+IMAGE = 'main_poster.JPG'
 name_position = (970, 1200)
 signature_position = (970, 1400)
 
