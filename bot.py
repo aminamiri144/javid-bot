@@ -3,6 +3,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 from PIL import Image, ImageDraw, ImageFont
 import io
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 # توکن ربات تلگرام - باید از @BotFather دریافت کنید
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-yEk")
@@ -15,11 +17,11 @@ SELECTING_GENDER, GETTING_NAME = range(2)
 
 # موقعیت و تنظیمات متن روی تصویر
 TEXT_POSITION = {
-    'male': (100, 400),  # موقعیت X, Y برای آقایان
-    'female': (100, 400)  # موقعیت X, Y برای خانم‌ها
+    'male': (950, 1260),  # موقعیت X, Y برای آقایان
+    'female': (950, 1260)  # موقعیت X, Y برای خانم‌ها
 }
 
-TEXT_COLOR = (255, 255, 255)  # رنگ سفید
+TEXT_COLOR = (255, 215, 0)  # رنگ طلایی
 FONT_SIZE = 48
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -128,8 +130,18 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
     except:
         font = ImageFont.load_default()
     
+    # تبدیل متن فارسی برای نمایش صحیح
+    try:
+        # reshape کردن متن فارسی برای اتصال حروف
+        reshaped_text = arabic_reshaper.reshape(text)
+        # اصلاح جهت متن (RTL)
+        bidi_text = get_display(reshaped_text)
+    except:
+        # در صورت خطا، از متن اصلی استفاده می‌شود
+        bidi_text = text
+    
     # نوشتن متن روی تصویر
-    draw.text(position, text, fill=TEXT_COLOR, font=font)
+    draw.text(position, bidi_text, fill=TEXT_COLOR, font=font)
     
     # تبدیل به BytesIO برای ارسال
     output = io.BytesIO()
