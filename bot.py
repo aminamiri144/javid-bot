@@ -11,7 +11,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-y
 
 # تعریف جفت تصاویر دعوت‌نامه
 # فرمت: {'key': {'name': 'نام نمایشی', 'male': 'مسیر فایل مرد', 'female': 'مسیر فایل زن', 'position': (x, y)}}
-position = (990, 1200)
+position = (970, 1200)
 
 IMAGE_SETS = {
     'invitation': {
@@ -198,11 +198,15 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
     img = Image.open(image_path)
     draw = ImageDraw.Draw(img)
     
+    # گرفتن ابعاد تصویر
+    img_width, img_height = img.size
+    
     # تلاش برای استفاده از فونت فارسی
     try:
         # استفاده از فونت پیش‌فرض سیستم یا فونت فارسی
         font_paths = [
-            "fonts/YekanBakh-Black.ttf",  # فونت پایدا
+            "fonts/YekanBakh-Regular.ttf",  # فونت یکانبخ
+            "fonts/YekanBakh-Regular",  # بدون پسوند
         ]
         
         font = None
@@ -230,8 +234,13 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
         # در صورت خطا، از متن اصلی استفاده می‌شود
         bidi_text = text
     
-    # نوشتن متن روی تصویر
-    draw.text(position, bidi_text, fill=TEXT_COLOR, font=font, anchor="rt")
+    # محاسبه موقعیت مرکز افقی (X در وسط تصویر)
+    center_x = img_width // 2
+    # موقعیت عمودی از position tuple گرفته می‌شود
+    y_position = position[1]
+    
+    # نوشتن متن روی تصویر با anchor "mm" برای مرکز کردن متن
+    draw.text((center_x, y_position), bidi_text, fill=TEXT_COLOR, font=font, anchor="mm")
     
     # تبدیل به BytesIO برای ارسال
     output = io.BytesIO()
