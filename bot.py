@@ -13,8 +13,8 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "8550969476:AAFOqTCzfYuVLJlypzAu52K_W_1ygzF-y
 # فرمت: {'key': {'name': 'نام نمایشی', 'image': 'مسیر فایل تصویر', 'name_position': (x, y), 'signature_position': (x, y)}}
 
 IMAGE = 'main_poster.JPG'
-name_position = (970, 1200)
-signature_position = (970, 2000)
+name_position = (1135, 1300)
+signature_position = (1135, 2040)
 
 IMAGE_SETS = {
     'invitation': {
@@ -60,8 +60,8 @@ IMAGE_SETS = {
 SELECTING_IMAGE_SET, SELECTING_GENDER, GETTING_NAME = range(3)
 
 TEXT_COLOR = (255, 255, 255)  # رنگ سفید
-FONT_SIZE = 42
-SIGNATURE_FONT_SIZE = 42
+FONT_SIZE = 38
+SIGNATURE_FONT_SIZE = 38
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """شروع ربات و نمایش دکمه‌های انتخاب جفت تصویر"""
