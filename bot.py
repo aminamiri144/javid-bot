@@ -178,7 +178,7 @@ async def new_invitation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await query.edit_message_text(
-        "لطفاً طرح دعوت‌نامه را انتخاب کنید:",
+        "لطفاً اسپانسر دعوت‌نامه را انتخاب کنید:",
         reply_markup=reply_markup
     )
     
@@ -247,6 +247,7 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start), CallbackQueryHandler(new_invitation, pattern='^new_invitation$')],
         states={
+            SELECTING_IMAGE_SET: [CallbackQueryHandler(image_set_selected, pattern='^imgset_')],
             SELECTING_GENDER: [CallbackQueryHandler(gender_selected)],
             GETTING_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
         },
