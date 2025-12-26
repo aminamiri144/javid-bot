@@ -170,7 +170,7 @@ def add_text_to_image(image_path: str, text: str, position: tuple) -> io.BytesIO
         bidi_text = text
     
     # نوشتن متن روی تصویر
-    draw.text(position, bidi_text, fill=TEXT_COLOR, font=font)
+    draw.text(position, bidi_text, fill=TEXT_COLOR, font=font, anchor="rt")
     
     # تبدیل به BytesIO برای ارسال
     output = io.BytesIO()
